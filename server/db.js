@@ -30,7 +30,7 @@ const databaseConfig={
 }
 //向外暴露方法
 module.exports = {
-  query : function(sql,callback){
+  query : function(sql,params,callback){
     //每次使用的时候需要创建链接，数据操作完成之后要关闭连接
     var connection = mysql.createConnection(databaseConfig);
     connection.connect(function(err){
@@ -38,8 +38,10 @@ module.exports = {
         console.log('数据库链接失败');
         throw err;
       }
-      //开始数据操作
-      connection.query( sql, function(err,results,fields ){
+      // 它接受三个参数，第一个是SQL语句，但是要注意，当传变量的时候要用‘?’代替，不要使用字符串拼接；
+      // 第二个参数就是按照参数一中‘?’的顺序将变量排列的数组；
+      // 第三个参数就是回调函数，返回进行数据操作后的数据或者影响；（也可以传两个参数，SQL语句和回调函数，但是这种方法不安全，同时会让SQL语句过于复杂，所以我们一般不推荐使用）！
+      connection.query( sql,params, function(err,results,fields ){
         if(err){
           console.log('数据操作失败');
           throw err;
@@ -59,3 +61,15 @@ module.exports = {
   }
 };
 
+
+// var db=require('../model/mysql.js');
+// 查询实例
+db.query('select * from t_user', [],function(result,fields){
+  console.log('查询结果：');
+  console.log(result);
+});
+//添加实例
+var  addSql = 'INSERT INTO websites(username,password) VALUES(?,?)';
+var  addSqlParams =['咕噜先森', '666'];
+db.query(addSql,addSqlParams,function(result,fields){
+  console.log('添加成功')
